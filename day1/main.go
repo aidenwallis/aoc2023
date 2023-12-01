@@ -4,9 +4,11 @@ import (
 	"embed"
 	"log"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
+
+	"golang.org/x/exp/maps"
 )
 
 //go:embed data.txt
@@ -32,21 +34,44 @@ func main() {
 	log.Println(count)
 }
 
-func resolveNumberFromLine(line string) (out int) {
-	digitsInLine := []string{}
+var transformMap = map[string]string{
+	"one":   "1",
+	"two":   "2",
+	"three": "3",
+	"four":  "4",
+	"five":  "5",
+	"six":   "6",
+	"seven": "7",
+	"eight": "8",
+	"nine":  "9",
+	"1":     "1",
+	"2":     "2",
+	"3":     "3",
+	"4":     "4",
+	"5":     "5",
+	"6":     "6",
+	"7":     "7",
+	"8":     "8",
+	"9":     "9",
+}
 
-	for _, r := range line {
-		if unicode.IsNumber(r) {
-			digitsInLine = append(digitsInLine, string(r))
+var matcher = regexp.MustCompile(`(` + strings.Join(maps.Keys(transformMap), "|") + `)`)
+
+func resolveNumberFromLine(line string) (out int) {
+	digits := []string{}
+
+	if v := matcher.FindString(line); v != "" {
+		digits = append(digits, transformMap[v])
+	}
+
+	for i := 0; i < len(line); i++ {
+		// cursed, walk back
+		if v := matcher.FindString(line[len(line)-i:]); v != "" {
+			digits = append(digits, transformMap[v])
+			break
 		}
 	}
 
-	if len(digitsInLine) == 0 {
-		// ???
-		return
-	}
-
-	join := digitsInLine[0] + digitsInLine[len(digitsInLine)-1]
-	out, _ = strconv.Atoi(join)
+	out, _ = strconv.Atoi(digits[0] + digits[len(digits)-1])
 	return
 }
