@@ -65,13 +65,14 @@ func resolveNumberFromLine(line string) (out int) {
 	}
 
 	for i := 0; i < len(line); i++ {
-		// cursed, walk back
+		// fucking cursed, walk back
 		if v := matcher.FindString(line[len(line)-i:]); v != "" {
 			digits = append(digits, transformMap[v])
 			break
 		}
 	}
 
+	// please dont do this
 	out, _ = strconv.Atoi(digits[0] + digits[len(digits)-1])
 	return
 }
